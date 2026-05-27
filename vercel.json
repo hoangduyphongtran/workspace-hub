@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/auth/:provider", "destination": "/api/auth" },
+    { "source": "/callback/:provider", "destination": "/api/callback" },
+    { "source": "/api/feed/:appId", "destination": "/api/feed" },
+    { "source": "/api/status", "destination": "/api/status" },
+    { "source": "/api/disconnect/:provider", "destination": "/api/disconnect" }
+  ]
+}

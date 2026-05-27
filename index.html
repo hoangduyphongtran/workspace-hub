@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workspace Hub</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff;
+    --bg2: #f5f5f7;
+    --bg3: #ebebed;
+    --text: #1d1d1f;
+    --text2: #6e6e73;
+    --text3: #aeaeb2;
+    --border: rgba(0,0,0,0.1);
+    --border2: rgba(0,0,0,0.18);
+    --blue: #0071e3;
+    --blue-bg: #e8f0fd;
+    --blue-text: #0c447c;
+    --green: #1d9e75;
+    --green-bg: #eaf3de;
+    --green-text: #27500a;
+    --amber: #ba7517;
+    --amber-bg: #faeeda;
+    --amber-text: #633806;
+    --red: #e24b4a;
+    --red-bg: #fcebeb;
+    --red-text: #791f1f;
+    --purple-bg: #eeedfe;
+    --purple-text: #3c3489;
+    --r: 12px;
+    --rm: 8px;
+    --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1e;
+      --bg2: #2c2c2e;
+      --bg3: #3a3a3c;
+      --text: #f5f5f7;
+      --text2: #98989d;
+      --text3: #636366;
+      --border: rgba(255,255,255,0.1);
+      --border2: rgba(255,255,255,0.2);
+      --blue-bg: #0c2d5a;
+      --blue-text: #85b7eb;
+      --green-bg: #0f3a1e;
+      --green-text: #97c459;
+      --amber-bg: #3d2200;
+      --amber-text: #fac775;
+      --red-bg: #3d0f0f;
+      --red-text: #f09595;
+      --purple-bg: #221f54;
+      --purple-text: #afa9ec;
+    }
+  }
+  html { font-family: var(--font); background: var(--bg3); color: var(--text); font-size: 16px; }
+  body { min-height: 100vh; }
+
+  /* ── Layout ── */
+  .shell { display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 220px; flex-shrink: 0; background: var(--bg);
+    border-right: 0.5px solid var(--border);
+    display: flex; flex-direction: column;
+    padding: 1rem 0; overflow-y: auto;
+    transition: width .2s;
+  }
+  .sidebar-logo {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 1rem 1rem; border-bottom: 0.5px solid var(--border);
+    margin-bottom: .5rem;
+  }
+  .logo-icon {
+    width: 32px; height: 32px; border-radius: 9px;
+    background: linear-gradient(135deg, #0071e3, #5ac8fa);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .logo-icon i { color: #fff; font-size: 17px; }
+  .logo-name { font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: -.02em; }
+  .logo-sub { font-size: 11px; color: var(--text3); }
+  .sidebar-section { padding: 0 .5rem; margin-bottom: .5rem; }
+  .sidebar-label {
+    font-size: 10px; font-weight: 600; color: var(--text3);
+    letter-spacing: .06em; text-transform: uppercase;
+    padding: .5rem .75rem .25rem;
+  }
+  .sidebar-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 10px; border-radius: var(--rm);
+    cursor: pointer; transition: background .12s; text-decoration: none;
+  }
+  .sidebar-item:hover { background: var(--bg2); }
+  .sidebar-item.active { background: var(--blue-bg); }
+  .sidebar-item-left { display: flex; align-items: center; gap: 8px; }
+  .sidebar-item i { font-size: 15px; color: var(--text2); }
+  .sidebar-item.active i { color: var(--blue-text); }
+  .sidebar-item span { font-size: 13px; color: var(--text); }
+  .sidebar-item.active span { color: var(--blue-text); font-weight: 500; }
+  .sidebar-count {
+    font-size: 10px; padding: 1px 6px; border-radius: 8px;
+    background: var(--bg3); color: var(--text2); font-weight: 500;
+  }
+  .sidebar-item.active .sidebar-count { background: var(--blue-bg); color: var(--blue-text); }
+
+  /* ── Main ── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* ── Topbar ── */
+  .topbar {
+    background: var(--bg); border-bottom: 0.5px solid var(--border);
+    padding: .75rem 1.25rem; display: flex; align-items: center;
+    justify-content: space-between; gap: 12px; flex-shrink: 0;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .topbar-title { font-size: 15px; font-weight: 500; color: var(--text); }
+  .topbar-date { font-size: 12px; color: var(--text3); }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .searchbox {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--bg2); border: 0.5px solid var(--border);
+    border-radius: 20px; padding: 6px 12px; width: 200px;
+    transition: border-color .15s;
+  }
+  .searchbox:focus-within { border-color: var(--blue); }
+  .searchbox i { font-size: 13px; color: var(--text3); flex-shrink: 0; }
+  .searchbox input { border: none; background: transparent; outline: none; font-size: 12px; color: var(--text); width: 100%; font-family: var(--font); }
+  .searchbox input::placeholder { color: var(--text3); }
+  .btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; padding: 6px 13px; border-radius: 20px;
+    border: 0.5px solid var(--border2); background: transparent;
+    cursor: pointer; color: var(--text2); transition: all .15s;
+    white-space: nowrap; font-family: var(--font);
+  }
+  .btn:hover { background: var(--bg2); color: var(--text); }
+  .btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .btn.primary:hover { background: #005bbb; }
+  .btn i { font-size: 13px; }
+
+  /* ── Content ── */
+  .content { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1.25rem; }
+
+  /* ── Stat strip ── */
+  .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+  .stat-card {
+    background: var(--bg); border: 0.5px solid var(--border);
+    border-radius: var(--r); padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .stat-icon { font-size: 18px; margin-bottom: 2px; }
+  .stat-label { font-size: 11px; color: var(--text2); }
+  .stat-val { font-size: 24px; font-weight: 500; color: var(--text); line-height: 1; }
+  .stat-sub { font-size: 11px; color: var(--text3); }
+  .stat-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; vertical-align: 1px; }
+
+  /* ── Grid ── */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--bg); border: 0.5px solid var(--border);
+    border-radius: var(--r); display: flex; flex-direction: column;
+    overflow: hidden; transition: border-color .15s, box-shadow .15s;
+  }
+  .card:hover { border-color: var(--border2); box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+  .card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; border-bottom: 0.5px solid var(--border);
+  }
+  .head-left { display: flex; align-items: center; gap: 8px; }
+  .app-logo {
+    width: 28px; height: 28px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; flex-shrink: 0; letter-spacing: -.5px;
+  }
+  .app-name { font-size: 12px; font-weight: 500; color: var(--text); }
+  .cat-badge { font-size: 9px; padding: 2px 7px; border-radius: 8px; font-weight: 500; white-space: nowrap; }
+  .b-work    { background: var(--blue-bg);   color: var(--blue-text); }
+  .b-social  { background: var(--green-bg);  color: var(--green-text); }
+  .b-design  { background: var(--purple-bg); color: var(--purple-text); }
+  .b-job     { background: var(--amber-bg);  color: var(--amber-text); }
+  .b-pm      { background: #fbeaf0; color: #72243e; }
+  .b-ms      { background: var(--blue-bg);   color: var(--blue-text); }
+  .b-ai      { background: var(--green-bg);  color: var(--green-text); }
+  .b-storage { background: var(--amber-bg);  color: var(--amber-text); }
+  .b-web     { background: #faece7; color: #712b13; }
+  .b-dev     { background: #f1efe8; color: #444441; }
+
+  /* ── Note display ── */
+  .note-display {
+    font-size: 11px; color: var(--text2); background: var(--bg2);
+    padding: 6px 12px; border-bottom: 0.5px solid var(--border);
+    line-height: 1.5; display: none;
+  }
+  .note-display.visible { display: block; }
+
+  /* ── Feed ── */
+  .feed { padding: 10px 12px; flex: 1; display: flex; flex-direction: column; gap: 7px; min-height: 108px; }
+  .fi { display: flex; flex-direction: column; gap: 1px; }
+  .fi-row { display: flex; align-items: flex-start; gap: 7px; }
+  .fi-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .d-blue  { background: #378add; }
+  .d-green { background: #1d9e75; }
+  .d-amber { background: #ba7517; }
+  .d-red   { background: #e24b4a; }
+  .fi-body { flex: 1; min-width: 0; }
+  .fi-text { font-size: 11px; color: var(--text); line-height: 1.4; }
+  .fi-meta { font-size: 10px; color: var(--text3); margin-top: 1px; }
+  .tag { display: inline-block; font-size: 9px; padding: 1px 5px; border-radius: 4px; margin-left: 4px; vertical-align: 1px; }
+  .t-new  { background: var(--green-bg);  color: var(--green-text); }
+  .t-warn { background: var(--amber-bg);  color: var(--amber-text); }
+  .t-done { background: #e1f5ee; color: #0f6e56; }
+  .t-del  { background: var(--red-bg);   color: var(--red-text); }
+  .divd { height: 0.5px; background: var(--border); }
+  .feed-empty { display: flex; flex: 1; align-items: center; justify-content: center; flex-direction: column; gap: 6px; padding: 1rem 0; }
+  .feed-empty i { font-size: 20px; color: var(--text3); }
+  .feed-empty span { font-size: 11px; color: var(--text3); text-align: center; }
+
+  /* ── Skeleton ── */
+  .sk { background: var(--bg2); border-radius: 3px; height: 10px; animation: pulse 1.4s ease-in-out infinite; }
+  .sk.w80 { width: 80%; } .sk.w60 { width: 60%; } .sk.w40 { width: 40%; }
+  @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:.9} }
+
+  /* ── Note area ── */
+  .note-area { padding: 0 12px 10px; display: none; flex-direction: column; gap: 6px; }
+  .note-area.open { display: flex; }
+  .note-area textarea {
+    font-size: 11px; color: var(--text); background: var(--bg2);
+    border: 0.5px solid var(--border); border-radius: var(--rm);
+    padding: 7px 9px; resize: none; outline: none; width: 100%;
+    min-height: 56px; font-family: var(--font); transition: border-color .15s;
+  }
+  .note-area textarea:focus { border-color: var(--blue); }
+  .note-area textarea::placeholder { color: var(--text3); }
+  .note-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .btn-note-save {
+    font-size: 11px; padding: 4px 10px; border-radius: 8px;
+    border: none; background: var(--blue); color: #fff;
+    cursor: pointer; transition: all .15s; font-family: var(--font);
+  }
+  .btn-note-save:hover { background: #005bbb; }
+  .btn-note-cancel {
+    font-size: 11px; padding: 4px 10px; border-radius: 8px;
+    border: 0.5px solid var(--border); background: transparent;
+    color: var(--text2); cursor: pointer; transition: all .15s; font-family: var(--font);
+  }
+  .btn-note-cancel:hover { background: var(--bg2); }
+
+  /* ── Card footer ── */
+  .card-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 12px; border-top: 0.5px solid var(--border);
+  }
+  .foot-left { display: flex; align-items: center; gap: 5px; }
+  .iBtn {
+    width: 26px; height: 26px; display: flex; align-items: center;
+    justify-content: center; border-radius: 7px;
+    border: 0.5px solid var(--border); background: transparent;
+    cursor: pointer; color: var(--text2); font-size: 13px;
+    transition: all .15s;
+  }
+  .iBtn:hover { background: var(--bg2); color: var(--text); }
+  .iBtn.active { color: var(--blue-text); background: var(--blue-bg); border-color: #b5d4f4; }
+  .iBtn.spin i { animation: rot .7s linear infinite; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+
+  /* ── Connection banner ── */
+  .connect-banner {
+    background: var(--blue-bg); border: 0.5px solid #b5d4f4;
+    border-radius: var(--r); padding: 14px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+  }
+  .connect-banner-left { display: flex; align-items: center; gap: 10px; }
+  .connect-banner i { font-size: 20px; color: var(--blue-text); }
+  .connect-banner-title { font-size: 13px; font-weight: 500; color: var(--blue-text); }
+  .connect-banner-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
+
+  /* ── Mobile ── */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    .stat-strip { grid-template-columns: 1fr 1fr; }
+    .searchbox { width: 150px; }
+    .topbar-date { display: none; }
+  }
+  @media (max-width: 480px) {
+    .grid { grid-template-columns: 1fr 1fr; }
+    .content { padding: .75rem; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><i class="ti ti-layout-dashboard"></i></div>
+      <div>
+        <div class="logo-name">Workspace Hub</div>
+        <div class="logo-sub" id="sb-date"></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Views</div>
+      <div class="sidebar-item active" onclick="setCat('all',this)">
+        <div class="sidebar-item-left"><i class="ti ti-grid-dots"></i><span>All apps</span></div>
+        <span class="sidebar-count" id="sc-all">20</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Categories</div>
+      <div id="sidebar-cats"></div>
+    </div>
+
+    <div style="margin-top:auto; padding: .75rem .5rem 0; border-top: 0.5px solid var(--border);">
+      <div class="sidebar-item" onclick="window.open('https://github.com','_blank')">
+        <div class="sidebar-item-left"><i class="ti ti-settings"></i><span>Settings</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-title" id="top-title">All apps</span>
+        <span class="topbar-date" id="top-date"></span>
+      </div>
+      <div class="topbar-right">
+        <div class="searchbox">
+          <i class="ti ti-search"></i>
+          <input type="text" placeholder="Search apps..." oninput="doSearch(this.value)" aria-label="Search apps">
+        </div>
+        <button class="btn" onclick="refreshAll()"><i class="ti ti-refresh" id="rai"></i> Refresh all</button>
+        <button class="btn primary" onclick="window.open('https://github.com','_blank')"><i class="ti ti-plug"></i> Connect accounts</button>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- Connection banner -->
+      <div class="connect-banner" id="connect-banner">
+        <div class="connect-banner-left">
+          <i class="ti ti-info-circle"></i>
+          <div>
+            <div class="connect-banner-title">Connect your real accounts</div>
+            <div class="connect-banner-sub">Data is currently simulated. Deploy to GitHub Pages + Cloudflare Workers to connect live data.</div>
+          </div>
+        </div>
+        <button class="btn primary" onclick="document.getElementById('connect-banner').style.display='none'">Got it</button>
+      </div>
+
+      <!-- Stat strip -->
+      <div class="stat-strip" id="stat-strip"></div>
+
+      <!-- Grid -->
+      <div class="grid" id="grid"></div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ────────────────────────────────────────────
+   DATA
+─────────────────────────────────────────────*/
+const APPS = [
+  { id:"personal-web", name:"Personal Website", icon:"WB", color:"#D85A30", cat:"web",     badge:"b-web",     label:"Website",     url:"https://yoursite.com",
+    feed:[{dot:"d-blue",  text:"New post draft: Freelance experience 2025", meta:"Draft · Pending publish", tag:"new"},
+          {dot:"d-amber", text:"SSL certificate expires in 14 days",        meta:"domain.com · Action needed", tag:"warn"},
+          {dot:"d-green", text:"142 visitors today — up 18%",               meta:"Google Analytics · Today"}]},
+
+  { id:"github", name:"GitHub", icon:"GH", color:"#24292E", cat:"dev", badge:"b-dev", label:"Dev", url:"https://github.com",
+    feed:[{dot:"d-blue",  text:"PR #42: Add dark mode to dashboard",  meta:"Awaiting review · 2h ago", tag:"new"},
+          {dot:"d-green", text:"Commit: Fix OAuth callback handler",   meta:"main · 3h ago", tag:"new"},
+          {dot:"d-amber", text:"Issue #18: API rate limit exceeded",   meta:"Open · Needs attention", tag:"warn"}]},
+
+  { id:"gmail", name:"Gmail", icon:"G", color:"#EA4335", cat:"email", badge:"b-work", label:"Email", url:"https://mail.google.com",
+    feed:[{dot:"d-blue",  text:"Q3 Service Agreement — Company ABC",   meta:"Unread · 08:42", tag:"new"},
+          {dot:"d-amber", text:"Reminder: June report due today",       meta:"Important · 07:15", tag:"warn"},
+          {dot:"d-blue",  text:"Team meeting schedule confirmed",       meta:"Unread · Yesterday 17:30", tag:"new"}]},
+
+  { id:"outlook", name:"Outlook", icon:"OL", color:"#0078D4", cat:"email", badge:"b-ms", label:"Microsoft", url:"https://outlook.live.com",
+    feed:[{dot:"d-blue",  text:"Re: Design proposal — client replied",  meta:"Unread · 09:10", tag:"new"},
+          {dot:"d-amber", text:"Microsoft 365 invoice due soon",        meta:"Important · 06:00", tag:"warn"},
+          {dot:"d-blue",  text:"Invitation: UX Design Summit 2025",     meta:"Unread · Yesterday 14:20", tag:"new"}]},
+
+  { id:"gcal", name:"Google Calendar", icon:"GC", color:"#1A73E8", cat:"calendar", badge:"b-work", label:"Calendar", url:"https://calendar.google.com",
+    feed:[{dot:"d-green", text:"Morning team standup — 09:00–10:00",   meta:"Today · Room A"},
+          {dot:"d-amber", text:"Deadline: Submit design v2",            meta:"Today 17:00 · 6h left", tag:"warn"},
+          {dot:"d-blue",  text:"Code review sprint 12",                 meta:"Tomorrow · 14:00–15:30", tag:"new"}]},
+
+  { id:"mscal", name:"MS Calendar", icon:"MC", color:"#0078D4", cat:"calendar", badge:"b-ms", label:"Microsoft", url:"https://outlook.live.com/calendar",
+    feed:[{dot:"d-green", text:"1:1 with manager — 10:30",             meta:"Today · Teams meeting"},
+          {dot:"d-amber", text:"Q3 project kickoff",                   meta:"Tomorrow 09:00 · 1 day left", tag:"warn"},
+          {dot:"d-blue",  text:"Internal Agile workshop",              meta:"Friday · 13:00–17:00", tag:"new"}]},
+
+  { id:"gdrive", name:"Google Drive", icon:"GD", color:"#34A853", cat:"storage", badge:"b-storage", label:"Storage", url:"https://drive.google.com",
+    feed:[{dot:"d-green", text:"Proposal_ClientXYZ_v3.pdf",            meta:"Updated · 09:22", tag:"new"},
+          {dot:"d-green", text:"Design_System_2025.fig",               meta:"Updated · Yesterday 16:45", tag:"new"},
+          {dot:"d-red",   text:"Old_backup_2023.zip",                  meta:"Deleted · Yesterday 11:00", tag:"del"}]},
+
+  { id:"onedrive", name:"OneDrive", icon:"OD", color:"#0078D4", cat:"storage", badge:"b-ms", label:"Microsoft", url:"https://onedrive.live.com",
+    feed:[{dot:"d-green", text:"Report_June2025_final.docx",           meta:"Updated · 08:55", tag:"new"},
+          {dot:"d-green", text:"Presentation_Q3.pptx",                 meta:"Updated · Yesterday 15:30", tag:"new"},
+          {dot:"d-red",   text:"Draft_v1_obsolete.xlsx",               meta:"Deleted · 2 days ago", tag:"del"}]},
+
+  { id:"dropbox", name:"Dropbox", icon:"Db", color:"#0061FF", cat:"storage", badge:"b-storage", label:"Storage", url:"https://dropbox.com",
+    feed:[{dot:"d-green", text:"Campaign_Assets_July2025.zip — 245 MB", meta:"Synced · 09:10", tag:"new"},
+          {dot:"d-green", text:"Client_Feedback_Round2.pdf",            meta:"Shared by An Nguyen · 1h ago", tag:"new"},
+          {dot:"d-red",   text:"Old_mockups_v1/ folder deleted",        meta:"Yesterday 16:30", tag:"del"}]},
+
+  { id:"facebook", name:"Facebook", icon:"f", color:"#1877F2", cat:"social", badge:"b-social", label:"Social", url:"https://facebook.com",
+    feed:[{dot:"d-blue",  text:"New post: Launching creative project 2025", meta:"Posted · 08:00"},
+          {dot:"d-green", text:"@yourname tagged in a photo by Nguyen Van A", meta:"New tag · 07:30", tag:"new"},
+          {dot:"d-green", text:"Last week's post reached 248 likes",         meta:"Engagement · Yesterday"}]},
+
+  { id:"instagram", name:"Instagram", icon:"ig", color:"#E1306C", cat:"social", badge:"b-social", label:"Social", url:"https://instagram.com",
+    feed:[{dot:"d-blue",  text:"New Reel: Behind the scenes — project",    meta:"07:00 · 142 views", tag:"new"},
+          {dot:"d-green", text:"Mentioned in @designer_vn story",          meta:"Today", tag:"new"},
+          {dot:"d-amber", text:"Reach up 18% compared to last week",       meta:"Stats · Last 7 days"}]},
+
+  { id:"pinterest", name:"Pinterest", icon:"P", color:"#E60023", cat:"social", badge:"b-social", label:"Social", url:"https://pinterest.com",
+    feed:[{dot:"d-green", text:"Board 'UI Inspiration 2025' — 3 new pins", meta:"Saved by 12 people", tag:"new"},
+          {dot:"d-blue",  text:"Logo design pin hit 89 saves",             meta:"Yesterday · Up 34%"},
+          {dot:"d-green", text:"New follower: @studio.design.vn",          meta:"Today"}]},
+
+  { id:"linkedin", name:"LinkedIn", icon:"in", color:"#0A66C2", cat:"job", badge:"b-job", label:"Jobs", url:"https://linkedin.com",
+    feed:[{dot:"d-green", text:"Profile viewed 47 times this week",        meta:"Up 22% · 7 days"},
+          {dot:"d-blue",  text:"Tagged in post: Top Designer VN 2025",     meta:"Mention · Today", tag:"new"},
+          {dot:"d-amber", text:"3 job matches based on your profile",      meta:"New suggestions · Today", tag:"new"}]},
+
+  { id:"indeed", name:"Indeed", icon:"In", color:"#003A9B", cat:"job", badge:"b-job", label:"Jobs", url:"https://indeed.com",
+    feed:[{dot:"d-blue",  text:"Senior UX Designer — TechVN",             meta:"Just posted · Today", tag:"new"},
+          {dot:"d-amber", text:"PM application expiring soon",             meta:"2 days left · Action needed", tag:"warn"},
+          {dot:"d-green", text:"Resume viewed by 2 employers",             meta:"Yesterday"}]},
+
+  { id:"trello", name:"Trello", icon:"Tr", color:"#0052CC", cat:"pm", badge:"b-pm", label:"PM", url:"https://trello.com",
+    feed:[{dot:"d-red",   text:"Design landing page — DUE TODAY",         meta:"Board: Website Redesign", tag:"warn"},
+          {dot:"d-green", text:"Done: Login screen wireframe",             meta:"09:45 · On time", tag:"done"},
+          {dot:"d-amber", text:"Write API docs — 2 days left",            meta:"Board: Backend Sprint 12", tag:"warn"}]},
+
+  { id:"msproject", name:"MS Project", icon:"MP", color:"#217346", cat:"pm", badge:"b-ms", label:"Microsoft", url:"https://project.microsoft.com",
+    feed:[{dot:"d-red",   text:"CRM go-live milestone — 3 days left",     meta:"CRM Implementation", tag:"warn"},
+          {dot:"d-green", text:"Done: Staging server setup",              meta:"On schedule · Today", tag:"done"},
+          {dot:"d-amber", text:"2 overdue tasks need attention",          meta:"Sprint 5", tag:"warn"}]},
+
+  { id:"teams", name:"Microsoft Teams", icon:"T", color:"#5059C9", cat:"pm", badge:"b-ms", label:"Microsoft", url:"https://teams.microsoft.com",
+    feed:[{dot:"d-blue",  text:"5 unread messages — Design channel",      meta:"Today · @yourname", tag:"new"},
+          {dot:"d-green", text:"Sprint review meeting — 15:00 today",     meta:"4 attendees"},
+          {dot:"d-green", text:"New file: UX_Research_Report.pdf shared", meta:"By Minh · 1h ago", tag:"new"}]},
+
+  { id:"behance", name:"Behance", icon:"Bē", color:"#0057FF", cat:"design", badge:"b-design", label:"Creative", url:"https://behance.net",
+    feed:[{dot:"d-blue",  text:"New project: Brand Identity — StartupXYZ", meta:"Published · 08:30", tag:"new"},
+          {dot:"d-green", text:"'App UI Kit' received 34 appreciates",    meta:"Trending this week"},
+          {dot:"d-green", text:"Profile: 1,240 views this month",         meta:"Up 15%"}]},
+
+  { id:"canva", name:"Canva", icon:"Cv", color:"#00C4CC", cat:"design", badge:"b-design", label:"Creative", url:"https://canva.com",
+    feed:[{dot:"d-blue",  text:"New design: Social posts July 2025",      meta:"Edited · 10:00", tag:"new"},
+          {dot:"d-green", text:"Tran Minh shared 'Branding Kit Q3'",      meta:"Collaboration · Today", tag:"new"},
+          {dot:"d-amber", text:"Magic Write generated 3 captions",        meta:"AI feature · Yesterday"}]},
+
+  { id:"vidu", name:"Vidu", icon:"Vi", color:"#7C3AED", cat:"ai", badge:"b-ai", label:"AI", url:"https://vidu.studio",
+    feed:[{dot:"d-green", text:"'Product Demo Video v2' — rendering 85%", meta:"AI video · Today", tag:"new"},
+          {dot:"d-green", text:"Done: 'Brand Story' 30s — 4K export",    meta:"Completed · Yesterday", tag:"done"},
+          {dot:"d-amber", text:"'Explainer Animation' waiting for prompt", meta:"Draft · Not started"}]},
+
+  { id:"googleflow", name:"Google Flow", icon:"GF", color:"#4285F4", cat:"ai", badge:"b-ai", label:"AI", url:"https://labs.google/flow",
+    feed:[{dot:"d-green", text:"Summer campaign opening — processing",    meta:"Today", tag:"new"},
+          {dot:"d-green", text:"Done: 'Summer Launch' storyboard",        meta:"Yesterday 16:00", tag:"done"},
+          {dot:"d-blue",  text:"Veo 3: 3 clips generated this week",     meta:"AI clips"}]},
+];
+
+const CATS = [
+  { id:"web",     icon:"ti-world",         label:"Website" },
+  { id:"dev",     icon:"ti-brand-github",  label:"Dev" },
+  { id:"email",   icon:"ti-mail",          label:"Email" },
+  { id:"calendar",icon:"ti-calendar",      label:"Calendar" },
+  { id:"storage", icon:"ti-cloud",         label:"Storage" },
+  { id:"social",  icon:"ti-brand-instagram",label:"Social" },
+  { id:"job",     icon:"ti-briefcase",     label:"Jobs" },
+  { id:"pm",      icon:"ti-checkup-list",  label:"PM" },
+  { id:"design",  icon:"ti-palette",       label:"Creative" },
+  { id:"ai",      icon:"ti-sparkles",      label:"AI" },
+];
+
+const TAG_CLASS = { new:"t-new", warn:"t-warn", done:"t-done", del:"t-del" };
+const TAG_LABEL = { new:"New", warn:"Review", done:"Done", del:"Deleted" };
+
+let curCat = "all", searchQ = "", loaded = new Set(), notes = {}, noteOpen = new Set();
+
+/* ────────── Init dates ────────── */
+const D = new Date();
+const dateStr = D.toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric", year:"numeric" });
+document.getElementById("sb-date").textContent = dateStr;
+document.getElementById("top-date").textContent = dateStr;
+
+/* ────────── Stats ────────── */
+function buildStats() {
+  const unread  = APPS.filter(a=>["gmail","outlook"].includes(a.id)).reduce((n,a)=>n+a.feed.filter(f=>f.tag==="new").length,0);
+  const tasks   = APPS.filter(a=>["trello","msproject"].includes(a.id)).reduce((n,a)=>n+a.feed.filter(f=>f.tag==="warn").length,0);
+  const done    = APPS.reduce((n,a)=>n+a.feed.filter(f=>f.tag==="done").length,0);
+  const files   = APPS.filter(a=>["gdrive","onedrive","dropbox"].includes(a.id)).reduce((n,a)=>n+a.feed.filter(f=>f.tag==="new").length,0);
+  const mentions= APPS.filter(a=>["facebook","instagram","linkedin"].includes(a.id)).reduce((n,a)=>n+a.feed.filter(f=>f.tag==="new").length,0);
+  document.getElementById("stat-strip").innerHTML = `
+    <div class="stat-card">
+      <i class="ti ti-mail stat-icon" style="color:#ea4335"></i>
+      <div class="stat-label">Unread emails</div>
+      <div class="stat-val">${unread}</div>
+      <div class="stat-sub"><span class="stat-dot" style="background:#378add"></span>Gmail + Outlook</div>
+    </div>
+    <div class="stat-card">
+      <i class="ti ti-clock stat-icon" style="color:#ba7517"></i>
+      <div class="stat-label">Tasks due soon</div>
+      <div class="stat-val">${tasks}</div>
+      <div class="stat-sub"><span class="stat-dot" style="background:#ba7517"></span>Trello + MS Project</div>
+    </div>
+    <div class="stat-card">
+      <i class="ti ti-circle-check stat-icon" style="color:#1d9e75"></i>
+      <div class="stat-label">Completed today</div>
+      <div class="stat-val">${done}</div>
+      <div class="stat-sub"><span class="stat-dot" style="background:#1d9e75"></span>All apps</div>
+    </div>
+    <div class="stat-card">
+      <i class="ti ti-file-upload stat-icon" style="color:#0061ff"></i>
+      <div class="stat-label">New / updated files</div>
+      <div class="stat-val">${files}</div>
+      <div class="stat-sub"><span class="stat-dot" style="background:#0061ff"></span>Drive · OneDrive · Dropbox</div>
+    </div>
+    <div class="stat-card">
+      <i class="ti ti-at stat-icon" style="color:#e1306c"></i>
+      <div class="stat-label">Mentions & tags</div>
+      <div class="stat-val">${mentions}</div>
+      <div class="stat-sub"><span class="stat-dot" style="background:#e1306c"></span>Social networks</div>
+    </div>
+  `;
+}
+
+/* ────────── Sidebar cats ────────── */
+function buildSidebar() {
+  document.getElementById("sidebar-cats").innerHTML = CATS.map(c => {
+    const n = APPS.filter(a => a.cat === c.id).length;
+    return `<div class="sidebar-item" data-cat="${c.id}" onclick="setCat('${c.id}',this)">
+      <div class="sidebar-item-left"><i class="ti ${c.icon}"></i><span>${c.label}</span></div>
+      <span class="sidebar-count">${n}</span>
+    </div>`;
+  }).join("");
+}
+
+/* ────────── Filter ────────── */
+function setCat(id, el) {
+  curCat = id;
+  document.querySelectorAll(".sidebar-item").forEach(t => t.classList.remove("active"));
+  el.classList.add("active");
+  document.getElementById("top-title").textContent = id === "all" ? "All apps" : CATS.find(c=>c.id===id)?.label || id;
+  renderGrid();
+}
+function doSearch(v) { searchQ = v.toLowerCase(); renderGrid(); }
+
+/* ────────── Feed HTML ────────── */
+function feedHTML(items) {
+  if (!items?.length) return `<div class="feed-empty"><i class="ti ti-inbox"></i><span>No data</span></div>`;
+  return items.map((it, i) => `
+    <div class="fi"><div class="fi-row">
+      <div class="fi-dot ${it.dot}"></div>
+      <div class="fi-body">
+        <div class="fi-text">${it.text}${it.tag ? `<span class="tag ${TAG_CLASS[it.tag]}">${TAG_LABEL[it.tag]}</span>` : ""}</div>
+        <div class="fi-meta">${it.meta}</div>
+      </div>
+    </div></div>
+    ${i < items.length - 1 ? '<div class="divd"></div>' : ''}
+  `).join("");
+}
+function skelFeed() {
+  return [0,1,2].map(i => `
+    <div class="fi"><div class="sk w${["80","60","75"][i]}"></div><div class="sk w40" style="margin-top:5px"></div></div>
+    ${i < 2 ? '<div class="divd"></div>' : ''}
+  `).join("");
+}
+
+/* ────────── Notes ────────── */
+function toggleNote(id) {
+  const area = document.getElementById("na-" + id);
+  const btn  = document.getElementById("nb-" + id);
+  if (!area) return;
+  if (noteOpen.has(id)) {
+    noteOpen.delete(id); area.classList.remove("open"); btn.classList.remove("active");
+  } else {
+    noteOpen.add(id); area.classList.add("open"); btn.classList.add("active");
+    const ta = document.getElementById("nt-" + id);
+    if (ta) ta.focus();
+  }
+}
+function saveNote(id) {
+  const ta   = document.getElementById("nt-" + id);
+  const disp = document.getElementById("nd-" + id);
+  if (!ta) return;
+  notes[id] = ta.value.trim();
+  if (disp) { disp.textContent = notes[id]; disp.className = "note-display" + (notes[id] ? " visible" : ""); }
+  toggleNote(id);
+}
+
+/* ────────── Render grid ────────── */
+function renderGrid() {
+  const list = APPS.filter(a => (curCat === "all" || a.cat === curCat) && a.name.toLowerCase().includes(searchQ));
+  document.getElementById("grid").innerHTML = list.map(a => `
+    <div class="card" id="c-${a.id}">
+      <div class="card-head">
+        <div class="head-left">
+          <div class="app-logo" style="background:${a.color}18;color:${a.color}">${a.icon}</div>
+          <span class="app-name">${a.name}</span>
+        </div>
+        <span class="cat-badge ${a.badge}">${a.label}</span>
+      </div>
+      <div class="note-display${notes[a.id] ? " visible" : ""}" id="nd-${a.id}">${notes[a.id] || ""}</div>
+      <div class="feed" id="f-${a.id}">
+        ${loaded.has(a.id) ? feedHTML(a.feed) : `<div class="feed-empty"><i class="ti ti-refresh"></i><span>Click refresh to load</span></div>`}
+      </div>
+      <div class="note-area${noteOpen.has(a.id) ? " open" : ""}" id="na-${a.id}">
+        <textarea id="nt-${a.id}" placeholder="Quick note for ${a.name}...">${notes[a.id] || ""}</textarea>
+        <div class="note-actions">
+          <button class="btn-note-cancel" onclick="toggleNote('${a.id}')">Cancel</button>
+          <button class="btn-note-save"   onclick="saveNote('${a.id}')">Save</button>
+        </div>
+      </div>
+      <div class="card-foot">
+        <div class="foot-left">
+          <button class="iBtn" onclick="window.open('${a.url}','_blank')" title="Open ${a.name}"><i class="ti ti-external-link"></i></button>
+          <button class="iBtn${noteOpen.has(a.id) ? " active" : ""}" id="nb-${a.id}" onclick="toggleNote('${a.id}')" title="Quick note"><i class="ti ti-notes"></i></button>
+        </div>
+        <button class="iBtn${loaded.has(a.id) ? "" : " active"}" id="br-${a.id}" onclick="refresh1('${a.id}')" title="Refresh">
+          <i class="ti ti-refresh"></i>
+        </button>
+      </div>
+    </div>
+  `).join("");
+}
+
+/* ────────── Refresh ────────── */
+function refresh1(id) {
+  const a = APPS.find(x => x.id === id);
+  if (!a) return;
+  const btn    = document.getElementById("br-" + id);
+  const feedEl = document.getElementById("f-" + id);
+  if (btn) btn.classList.add("spin");
+  if (feedEl) feedEl.innerHTML = skelFeed();
+  setTimeout(() => {
+    loaded.add(id);
+    if (feedEl) feedEl.innerHTML = feedHTML(a.feed);
+    if (btn) { btn.classList.remove("spin"); btn.classList.remove("active"); }
+  }, 600 + Math.random() * 800);
+}
+function refreshAll() {
+  const icon = document.getElementById("rai");
+  if (icon) icon.style.animation = "rot .7s linear infinite";
+  const vis = APPS.filter(a => curCat === "all" || a.cat === curCat);
+  let done = 0;
+  vis.forEach((a, i) => setTimeout(() => {
+    refresh1(a.id);
+    if (++done === vis.length) setTimeout(() => { if (icon) icon.style.animation = ""; }, 1500);
+  }, i * 100));
+}
+
+/* ────────────────────────────────────────────
+   LIVE DATA — connects to Vercel backend
+   Replace WORKER_URL with your Vercel project URL
+   e.g. https://workspace-hub-you.vercel.app
+─────────────────────────────────────────────*/
+const WORKER_URL = ""; // ← paste your Vercel URL here (no trailing slash)
+
+// Apps that support live data fetching
+const LIVE_APPS = new Set([
+  "gmail","gcal","gdrive","outlook","mscal","onedrive","teams","msproject","github","dropbox"
+]);
+
+async function fetchLiveFeed(appId) {
+  if (!WORKER_URL || !LIVE_APPS.has(appId)) return null;
+  try {
+    const res = await fetch(`${WORKER_URL}/api/feed/${appId}`, { credentials:"include" });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.connected ? data.items : null;
+  } catch { return null; }
+}
+
+async function checkConnectionStatus() {
+  if (!WORKER_URL) return;
+  try {
+    const res    = await fetch(`${WORKER_URL}/api/status`, { credentials:"include" });
+    const status = await res.json();
+    // Update connect button label per provider
+    const labels = {
+      google:    ["gmail","gcal","gdrive"],
+      microsoft: ["outlook","mscal","onedrive","teams","msproject"],
+      github:    ["github"],
+      dropbox:   ["dropbox"],
+    };
+    for (const [provider, appIds] of Object.entries(labels)) {
+      if (status[provider]) {
+        appIds.forEach(id => {
+          const btn = document.getElementById("br-" + id);
+          if (btn) btn.title = "Refresh live data";
+        });
+      }
+    }
+    // Show connection status in topbar
+    const connected = Object.values(status).filter(Boolean).length;
+    const total     = Object.keys(status).length;
+    const pill      = document.querySelector(".btn.primary");
+    if (pill && connected === total) pill.textContent = "✓ All connected";
+    else if (pill && connected > 0)  pill.textContent = `${connected}/${total} connected`;
+  } catch { /* offline — use mock data */ }
+}
+
+/* Override refresh1 to fetch live data when WORKER_URL is set */
+const _refresh1Original = refresh1;
+async function refresh1(id) {
+  if (!WORKER_URL || !LIVE_APPS.has(id)) {
+    _refresh1Original(id);
+    return;
+  }
+  const btn    = document.getElementById("br-" + id);
+  const feedEl = document.getElementById("f-" + id);
+  if (btn) btn.classList.add("spin");
+  if (feedEl) feedEl.innerHTML = skelFeed();
+
+  const liveItems = await fetchLiveFeed(id);
+  const app       = APPS.find(a => a.id === id);
+
+  setTimeout(() => {
+    loaded.add(id);
+    // Use live data if available, fallback to mock
+    const items = liveItems || (app?.feed) || [];
+    if (feedEl) feedEl.innerHTML = feedHTML(items);
+    if (btn) { btn.classList.remove("spin"); btn.classList.remove("active"); }
+  }, 300);
+}
+
+/* ────────── Boot ────────── */
+buildStats();
+buildSidebar();
+renderGrid();
+checkConnectionStatus();
+</script>
+</body>
+</html>

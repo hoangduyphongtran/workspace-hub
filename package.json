@@ -1,0 +1,9 @@
+{
+  "name": "workspace-hub",
+  "version": "1.0.0",
+  "description": "Personal account dashboard — GitHub Pages + Vercel",
+  "private": true,
+  "dependencies": {
+    "cookie": "^0.6.0"
+  }
+}
