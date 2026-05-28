@@ -45,7 +45,6 @@ async function getValidAccessToken(req, res, provider) {
   if (!tokens?.access_token) return null;
   if (!isExpired(tokens)) return tokens.access_token;
 
-  // Try to refresh
   let fresh = null;
   const cid = process.env[`${provider.toUpperCase()}_CLIENT_ID`];
   const cs  = process.env[`${provider.toUpperCase()}_CLIENT_SECRET`];
@@ -77,6 +76,8 @@ async function callApi(url, token, extraHeaders = {}) {
 }
 
 /* ── Data fetchers ── */
+
+// Gmail: unread emails with clickable links
 async function fetchGmail(token) {
   const list = await callApi(
     "https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=5&q=is:unread", token
@@ -84,23 +85,30 @@ async function fetchGmail(token) {
   if (!list.messages?.length) return [{ dot:"d-green", text:"No unread emails", meta:"Inbox is clear" }];
   const msgs = await Promise.all(
     list.messages.slice(0, 3).map(m =>
-      callApi(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=Subject,From`, token)
+      callApi(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=Subject,From,Date`, token)
     )
   );
   return msgs.map(m => {
-    const h = m.payload?.headers || [];
+    const h       = m.payload?.headers || [];
+    const subject = h.find(x => x.name === "Subject")?.value || "(no subject)";
+    const from    = h.find(x => x.name === "From")?.value || "";
+    const date    = h.find(x => x.name === "Date")?.value || "";
+    const name    = from.replace(/<.*>/, "").trim() || from;
+    const time    = date ? new Date(date).toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" }) : "";
     return {
       dot:  "d-blue",
-      text: (h.find(x => x.name === "Subject")?.value || "(no subject)").slice(0, 58),
-      meta: (h.find(x => x.name === "From")?.value || "").slice(0, 40),
+      text: subject.slice(0, 58),
+      meta: `${name.slice(0, 30)} · ${time}`,
       tag:  "new",
+      url:  `https://mail.google.com/mail/u/0/#inbox/${m.id}`,
     };
   });
 }
 
+// Google Drive: recent files with clickable links
 async function fetchGDrive(token) {
   const data = await callApi(
-    "https://www.googleapis.com/drive/v3/files?pageSize=5&orderBy=modifiedTime desc&fields=files(name,modifiedTime,trashed)", token
+    "https://www.googleapis.com/drive/v3/files?pageSize=5&orderBy=modifiedTime desc&fields=files(id,name,modifiedTime,trashed,webViewLink)", token
   );
   return (data.files || []).slice(0, 3).map(f => ({
     dot:  f.trashed ? "d-red" : "d-green",
@@ -109,9 +117,11 @@ async function fetchGDrive(token) {
       ? `Deleted · ${new Date(f.modifiedTime).toLocaleDateString()}`
       : `Updated · ${new Date(f.modifiedTime).toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`,
     tag: f.trashed ? "del" : "new",
+    url: f.webViewLink || `https://drive.google.com/file/d/${f.id}/view`,
   }));
 }
 
+// Google Calendar: upcoming events with clickable links
 async function fetchGCal(token) {
   const now = new Date().toISOString();
   const data = await callApi(
@@ -123,22 +133,26 @@ async function fetchGCal(token) {
       dot:  "d-green",
       text: (e.summary || "(no title)").slice(0, 55),
       meta: new Date(start).toLocaleString([], { month:"short", day:"numeric", hour:"2-digit", minute:"2-digit" }),
+      url:  e.htmlLink || "https://calendar.google.com",
     };
   });
 }
 
+// Outlook: unread emails with clickable links
 async function fetchOutlook(token) {
   const data = await callApi(
-    "https://graph.microsoft.com/v1.0/me/messages?$filter=isRead eq false&$top=3&$select=subject,from,receivedDateTime", token
+    "https://graph.microsoft.com/v1.0/me/messages?$filter=isRead eq false&$top=3&$select=id,subject,from,receivedDateTime,webLink", token
   );
   return (data.value || []).map(m => ({
     dot:  "d-blue",
     text: (m.subject || "(no subject)").slice(0, 58),
     meta: (m.from?.emailAddress?.name || "").slice(0, 40),
     tag:  "new",
+    url:  m.webLink || "https://outlook.live.com",
   }));
 }
 
+// OneDrive: recent files with clickable links
 async function fetchOneDrive(token) {
   const data = await callApi("https://graph.microsoft.com/v1.0/me/drive/recent?$top=5", token);
   return (data.value || []).slice(0, 3).map(f => ({
@@ -146,22 +160,26 @@ async function fetchOneDrive(token) {
     text: f.name,
     meta: `Updated · ${new Date(f.lastModifiedDateTime).toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`,
     tag:  "new",
+    url:  f.webUrl || "https://onedrive.live.com",
   }));
 }
 
+// MS Calendar: upcoming events with clickable links
 async function fetchMsCal(token) {
   const now = new Date().toISOString();
   const end = new Date(Date.now() + 7 * 86400000).toISOString();
   const data = await callApi(
-    `https://graph.microsoft.com/v1.0/me/calendarview?startDateTime=${now}&endDateTime=${end}&$top=3&$select=subject,start`, token
+    `https://graph.microsoft.com/v1.0/me/calendarview?startDateTime=${now}&endDateTime=${end}&$top=3&$select=subject,start,webLink`, token
   );
   return (data.value || []).map(e => ({
     dot:  "d-green",
     text: (e.subject || "(no title)").slice(0, 55),
     meta: new Date(e.start?.dateTime).toLocaleString([], { month:"short", day:"numeric", hour:"2-digit", minute:"2-digit" }),
+    url:  e.webLink || "https://outlook.live.com/calendar",
   }));
 }
 
+// Teams: recent chats
 async function fetchTeams(token) {
   const data = await callApi(
     "https://graph.microsoft.com/v1.0/me/chats?$top=3&$expand=lastMessagePreview", token
@@ -171,20 +189,31 @@ async function fetchTeams(token) {
     text: c.lastMessagePreview?.body?.content?.slice(0, 55) || "New message",
     meta: c.topic || "Teams chat",
     tag:  "new",
+    url:  `https://teams.microsoft.com/l/chat/${c.id}/0`,
   }));
 }
 
+// GitHub: PRs and issues with clickable links
 async function fetchGitHub(token) {
   const [prs, issues] = await Promise.all([
     callApi("https://api.github.com/search/issues?q=is:pr+is:open+author:@me&per_page=2", token, { "User-Agent":"workspace-hub" }),
     callApi("https://api.github.com/issues?filter=created&state=open&per_page=2", token, { "User-Agent":"workspace-hub" }),
   ]);
   const out = [];
-  (prs.items || []).slice(0, 2).forEach(p => out.push({ dot:"d-blue", text:p.title.slice(0,55), meta:`PR · ${p.repository_url?.split("/").pop()}`, tag:"new" }));
-  (issues || []).slice(0, 1).forEach(i => out.push({ dot:"d-amber", text:i.title.slice(0,55), meta:`Issue · ${i.repository_url?.split("/").pop()}`, tag:"warn" }));
+  (prs.items || []).slice(0, 2).forEach(p => out.push({
+    dot: "d-blue", text: p.title.slice(0,55),
+    meta: `PR · ${p.repository_url?.split("/").pop()}`,
+    tag: "new", url: p.html_url,
+  }));
+  (issues || []).slice(0, 1).forEach(i => out.push({
+    dot: "d-amber", text: i.title.slice(0,55),
+    meta: `Issue · ${i.repository_url?.split("/").pop()}`,
+    tag: "warn", url: i.html_url,
+  }));
   return out.slice(0, 3);
 }
 
+// Dropbox: recent files
 async function fetchDropbox(token) {
   const res = await fetch("https://api.dropboxapi.com/2/files/list_folder", {
     method: "POST",
@@ -197,6 +226,7 @@ async function fetchDropbox(token) {
     text: f.name,
     meta: f[".tag"] === "deleted" ? "Deleted" : "Updated recently",
     tag:  f[".tag"] === "deleted" ? "del" : "new",
+    url:  "https://www.dropbox.com/home",
   }));
 }
 
