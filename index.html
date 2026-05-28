@@ -212,6 +212,9 @@
   .d-red   { background: #e24b4a; }
   .fi-body { flex: 1; min-width: 0; }
   .fi-text { font-size: 11px; color: var(--text); line-height: 1.4; }
+  .fi-link { text-decoration: none; display: block; border-radius: 6px; padding: 3px 5px; margin: -3px -5px; transition: background .12s; cursor: pointer; }
+  .fi-link:hover { background: var(--bg2); }
+  .fi-link:hover .fi-text { color: var(--blue); }
   .fi-meta { font-size: 10px; color: var(--text3); margin-top: 1px; }
   .tag { display: inline-block; font-size: 9px; padding: 1px 5px; border-radius: 4px; margin-left: 4px; vertical-align: 1px; }
   .t-new  { background: var(--green-bg);  color: var(--green-text); }
@@ -578,8 +581,14 @@ function feedHTML(items) {
     <div class="fi"><div class="fi-row">
       <div class="fi-dot ${it.dot}"></div>
       <div class="fi-body">
-        <div class="fi-text">${it.text}${it.tag ? `<span class="tag ${TAG_CLASS[it.tag]}">${TAG_LABEL[it.tag]}</span>` : ""}</div>
-        <div class="fi-meta">${it.meta}</div>
+        ${it.url
+          ? `<a class="fi-link" href="${it.url}" target="_blank" rel="noopener">
+               <div class="fi-text">${it.text}${it.tag ? `<span class="tag ${TAG_CLASS[it.tag]}">${TAG_LABEL[it.tag]}</span>` : ""}</div>
+               <div class="fi-meta">${it.meta}</div>
+             </a>`
+          : `<div class="fi-text">${it.text}${it.tag ? `<span class="tag ${TAG_CLASS[it.tag]}">${TAG_LABEL[it.tag]}</span>` : ""}</div>
+             <div class="fi-meta">${it.meta}</div>`
+        }
       </div>
     </div></div>
     ${i < items.length - 1 ? '<div class="divd"></div>' : ''}
@@ -680,7 +689,7 @@ function refreshAll() {
    Replace WORKER_URL with your Vercel project URL
    e.g. https://workspace-hub-you.vercel.app
 ─────────────────────────────────────────────*/
-const WORKER_URL = "https://workspace-hub-git-main-hoang-duy-phong-tran-s-projects.vercel.app";
+const WORKER_URL = ""; // ← paste your Vercel URL here (no trailing slash)
 
 // Apps that support live data fetching
 const LIVE_APPS = new Set([
